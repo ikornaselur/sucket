@@ -1,34 +1,38 @@
-import argparse
 import os
 from typing import Optional
 
 import boto3  # type: ignore
+import click
 from mypy_boto3_s3 import S3ServiceResource
 
 
+@click.command()
+@click.argument("bucket_name", type=str)
+@click.argument(
+    "prefix", required=False, type=str,
+)
 def sucket(bucket_name: str, prefix: str):
+    """ Download all files from a S3 bucket
+
+    By default, everything from a the bucket BUCKET_NAME is downloaded, with an
+    optional key filter, specified with PREFIX
+    """
     s3: S3ServiceResource = boto3.resource("s3")
     bucket = s3.Bucket(bucket_name)
 
-    for page in bucket.objects.filter(Prefix=prefix).pages():
-        for summary in page:
-            obj = summary.Object()
+    click.secho("[*] Fetching object metadata...", fg="green")
+    objects = [
+        summary.Object() for summary in bucket.objects.filter(Prefix=prefix).all()
+    ]
+    click.secho(f"[+] Found {len(objects)} objects", fg="green")
+    if not click.confirm(click.style("[?] Continue?", fg="yellow")):
+        click.secho("[-] Aborting...", fg="red")
+        return
+
+    with click.progressbar(
+        objects, label=click.style("[*] Downloading...", fg="green"), show_pos=True
+    ) as bar:
+        for obj in bar:
             os.makedirs(os.path.dirname(obj.key), exist_ok=True)
             with open(obj.key, "wb") as f:
                 obj.download_fileobj(f)
-
-
-def cli():
-    parser = argparse.ArgumentParser(description="Download all files from a S3 bucket")
-    parser.add_argument("bucket", type=str, help="The S3 bucket to download from")
-    parser.add_argument(
-        "prefix",
-        type=str,
-        default="",
-        nargs="?",
-        help="An optional prefix to apply on the bucket",
-    )
-
-    args = parser.parse_args()
-
-    sucket(args.bucket, args.prefix)
