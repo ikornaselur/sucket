@@ -1,15 +1,24 @@
 import os
-from typing import Optional
 
 import boto3  # type: ignore
 import click
 from mypy_boto3_s3 import S3ServiceResource
 
 
+def _download(obj):
+    os.makedirs(os.path.dirname(obj.key), exist_ok=True)
+    if obj.content_type == "application/x-directory":
+        # Directory has been created, nothing to download
+        return
+
+    with open(obj.key, "wb") as f:
+        obj.download_fileobj(f)
+
+
 @click.command()
 @click.argument("bucket_name", type=str)
 @click.argument(
-    "prefix", required=False, type=str,
+    "prefix", required=False, default="", type=str,
 )
 def sucket(bucket_name: str, prefix: str):
     """ Download all files from a S3 bucket
@@ -33,6 +42,4 @@ def sucket(bucket_name: str, prefix: str):
         objects, label=click.style("[*] Downloading...", fg="green"), show_pos=True
     ) as bar:
         for obj in bar:
-            os.makedirs(os.path.dirname(obj.key), exist_ok=True)
-            with open(obj.key, "wb") as f:
-                obj.download_fileobj(f)
+            _download(obj)
