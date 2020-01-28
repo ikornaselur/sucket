@@ -8,6 +8,10 @@ import click
 from .utils import sizeof_fmt
 
 
+class BucketException(Exception):
+    pass
+
+
 class Bucket:
     name: str
     session: aiobotocore.AioSession
@@ -28,7 +32,11 @@ class Bucket:
         kwargs = {"Bucket": self.name, "Prefix": prefix}
         async with self.session.create_client("s3") as client:
             while True:
-                response = await client.list_objects_v2(**kwargs)
+                try:
+                    response = await client.list_objects_v2(**kwargs)
+                except client.exceptions.NoSuchBucket as e:
+                    raise BucketException("Bucket not found") from e
+
                 objects = response.get("Contents", [])
                 yield objects
 
@@ -58,8 +66,13 @@ class Bucket:
     async def download_all_objects(self, prefix: str):
         self.secho("[*] Fetching object metadata...", fg="green")
         objects = []
-        async for page in self.all_objects_paginator(prefix):
-            objects.extend(page)
+        try:
+            async for page in self.all_objects_paginator(prefix):
+                objects.extend(page)
+        except BucketException as e:
+            self.secho(f"[-] {e}", fg="red")
+            return
+
         total_size = sum(o["Size"] for o in objects)
 
         if not objects:
