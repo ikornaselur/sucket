@@ -45,15 +45,24 @@ class Bucket:
 
                 kwargs["ContinuationToken"] = response["NextContinuationToken"]
 
-    async def _download_object(self, client, obj: Dict) -> int:
+    async def _download_object(self, client, obj: Dict, mode: str) -> int:
         async with self.semaphore:
-            os.makedirs(os.path.dirname(obj["Key"]), exist_ok=True)
+            if mode == "folder":
+                os.makedirs(os.path.dirname(obj["Key"]), exist_ok=True)
+
             if obj["Key"].endswith("/"):
                 # Directory has been created, nothing to download
                 return obj["Size"]
 
+            if mode == "flat":
+                local_file = obj["Key"].replace("/", "-")
+            elif mode == "keys-only":
+                local_file = obj["Key"].rsplit("/", maxsplit=1)[-1]
+            else:
+                local_file = obj["Key"]
+
             res = await client.get_object(Bucket=self.name, Key=obj["Key"])
-            with open(obj["Key"], "wb") as afp:
+            with open(local_file, "wb") as afp:
                 afp.write(await res["Body"].read())
             return obj["Size"]
 
@@ -63,7 +72,7 @@ class Bucket:
             return
         click.secho(msg, fg=fg)
 
-    async def download_all_objects(self, prefix: str):
+    async def download_all_objects(self, prefix: str, mode: str):
         self.secho("[*] Fetching object metadata...", fg="green")
         objects = []
         try:
@@ -92,7 +101,7 @@ class Bucket:
         async with self.session.create_client("s3") as client:
             tasks = []
             for obj in objects:
-                task = asyncio.ensure_future(self._download_object(client, obj))
+                task = asyncio.ensure_future(self._download_object(client, obj, mode))
                 tasks.append(task)
 
             if self.quiet:
