@@ -2,7 +2,7 @@ import asyncio
 import os
 from typing import AsyncIterator, Dict, List
 
-import aiobotocore
+import aiobotocore  # type: ignore
 import click
 
 from .utils import sizeof_fmt
