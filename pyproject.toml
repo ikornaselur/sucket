@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sucket"
-version = "0.1.0"
+version = "0.2.0"
 description = "A tool to get all files from an S3 bucket"
 authors = ["Axel <sucket@absalon.is>"]
 license = "MIT"
