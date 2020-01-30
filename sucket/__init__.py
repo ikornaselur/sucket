@@ -6,14 +6,14 @@ from .bucket import Bucket
 
 
 async def main(
-    loop,
+    loop: asyncio.AbstractEventLoop,
     bucket_name: str,
     prefix: str,
     quiet: bool,
     skip_prompt: bool,
     semaphores: int,
     mode: str,
-):
+) -> None:
     bucket = Bucket(
         bucket_name=bucket_name,
         semaphores=semaphores,
@@ -55,7 +55,7 @@ async def main(
 )
 def sucket(
     bucket_name: str, prefix: str, yes: bool, quiet: bool, semaphores: int, mode: str
-):
+) -> None:
     """ Download all files from a S3 bucket
 
     Everything from the bucket BUCKET_NAME is downloaded, with an optional key

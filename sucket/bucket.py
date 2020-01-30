@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import List
+from typing import Any, List
 
 import aiobotocore  # type: ignore
 import click
@@ -17,7 +17,12 @@ class Bucket:
     quiet: bool
 
     def __init__(
-        self, bucket_name: str, semaphores: int, loop, skip_prompt: bool, quiet: bool
+        self,
+        bucket_name: str,
+        semaphores: int,
+        loop: asyncio.AbstractEventLoop,
+        skip_prompt: bool,
+        quiet: bool,
     ):
         self.name = bucket_name
         self.session = aiobotocore.get_session(loop=loop)
@@ -25,7 +30,7 @@ class Bucket:
         self.skip_prompt = skip_prompt
         self.quiet = quiet
 
-    async def _download_object(self, client, obj: ObjectDict, mode: str) -> int:
+    async def _download_object(self, client: Any, obj: ObjectDict, mode: str) -> int:
         async with self.semaphore:
             if mode == "folder":
                 os.makedirs(os.path.dirname(obj["Key"]), exist_ok=True)
@@ -47,13 +52,13 @@ class Bucket:
                     fp.write(await stream.read())
             return obj["Size"]
 
-    def secho(self, msg: str, fg: str):
+    def secho(self, msg: str, fg: str) -> None:
         """ A helper function to print out but respecting quiet """
         if self.quiet:
             return
         click.secho(msg, fg=fg)
 
-    async def download_all_objects(self, prefix: str, mode: str):
+    async def download_all_objects(self, prefix: str, mode: str) -> None:
         self.secho("[*] Fetching object metadata...", fg="green")
         async with self.session.create_client("s3") as client:
             objects: List[ObjectDict] = []
