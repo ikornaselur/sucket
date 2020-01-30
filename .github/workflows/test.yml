@@ -25,14 +25,14 @@ jobs:
       id: cache
       with:
         path: ~/.virtualenvs
-        key: poetry-${{ hashFiles('**/poetry.lock') }}
+        key: poetry-${{ hashFiles('**/poetry.lock') }}-${{ matrix.python-version }}
         restore-keys: |
-          poetry-${{ hashFiles('**/poetry.lock') }}
+          poetry-${{ hashFiles('**/poetry.lock') }}-${{ matrix.python-version }}
 
     - name: Set Poetry config
       run: |
-        poetry config virtualenvs.in-project false
-        poetry config virtualenvs.path ~/.virtualenvs
+        poetry config --local virtualenvs.in-project false
+        poetry config --local virtualenvs.path ~/.virtualenvs
 
     - name: Install Dependencies
       run: poetry install
@@ -59,24 +59,27 @@ jobs:
         id: cache
         with:
           path: ~/.virtualenvs
-          key: poetry-${{ hashFiles('**/poetry.lock') }}
+          key: poetry-${{ hashFiles('**/poetry.lock') }}-lint
           restore-keys: |
-            poetry-${{ hashFiles('**/poetry.lock') }}
+            poetry-${{ hashFiles('**/poetry.lock') }}-lint
 
       - name: Set Poetry config
         run: |
-          poetry config virtualenvs.in-project false
-          poetry config virtualenvs.path ~/.virtualenvs
+          poetry config --local virtualenvs.in-project false
+          poetry config --local virtualenvs.path ~/.virtualenvs
 
       - name: Install Dependencies
         run: poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - name: Code Quality
+      - name: Black
         run: poetry run black --check sucket tests
 
-      - name: Run mypy
+      - name: Imports
+        run: poetry run isort -c -rc sucket tests
+
+      - name: Mypy
         run: poetry run mypy sucket tests
 
-      - name: Run flake8
+      - name: Flake8
         run: poetry run flake8 sucket tests

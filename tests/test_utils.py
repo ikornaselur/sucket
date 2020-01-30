@@ -1,4 +1,5 @@
 import pytest
+
 from sucket.utils import sizeof_fmt
 
 
