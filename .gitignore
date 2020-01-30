@@ -1,3 +1,5 @@
 .venv
 *.egg-info
 dist/
+.tox
+__pycache__
