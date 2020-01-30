@@ -4,13 +4,7 @@ mypy:
 flake8:
 	poetry run flake8 sucket tests
 
-black:
-	poetry run black sucket tests --check
-
-isort:
-	poetry run isort -c -rc sucket tests
-
-lint: mypy flake8 black
+lint: mypy flake8
 
 test:
 	poetry run pytest tests

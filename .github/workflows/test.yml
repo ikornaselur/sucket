@@ -72,12 +72,6 @@ jobs:
         run: poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - name: Black
-        run: poetry run black --check sucket tests
-
-      - name: Imports
-        run: poetry run isort -c -rc sucket tests
-
       - name: Mypy
         run: poetry run mypy sucket tests
 
