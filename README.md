@@ -34,9 +34,9 @@ Options:
 
 ## Examples
 
-![folder](.github/examples/folder.png)
-![flat](.github/examples/flat.png)
-![keys-only](.github/examples/keys-only.png)
+![folder](https://raw.githubusercontent.com/ikornaselur/sucket/master/.github/examples/folder.png)
+![flat](https://raw.githubusercontent.com/ikornaselur/sucket/master/.github/examples/flat.png)
+![keys-only](https://raw.githubusercontent.com/ikornaselur/sucket/master/.github/examples/keys-only.png)
 
 ## Notes
 
