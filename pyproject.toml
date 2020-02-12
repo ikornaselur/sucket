@@ -1,9 +1,11 @@
 [tool.poetry]
 name = "sucket"
-version = "0.3.1"
+version = "0.3.2"
 description = "A tool to get all files from an S3 bucket"
 authors = ["Axel <sucket@absalon.is>"]
 license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/ikornaselur/sucket"
 
 [tool.poetry.dependencies]
 python = "^3.6"
