@@ -67,7 +67,7 @@ class Bucket:
             try:
                 result: ListObjectsResultDict
                 async for result in paginator.paginate(Bucket=self.name, Prefix=prefix):
-                    objects.extend(result["Contents"])
+                    objects.extend(result.get("Contents", []))
             except client.exceptions.NoSuchBucket:
                 self.secho("[-] Bucket doesn't exist", fg="red")
                 return
